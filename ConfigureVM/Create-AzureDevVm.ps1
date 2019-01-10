@@ -10,78 +10,175 @@ param
     [string] $Location,
 
     [Parameter(Mandatory = $True)]
-    [string] $AdminUsername
+    [string] $AdminUsername,
+
+    [Parameter(Mandatory=$True)]
+    [securestring] $AdminPassword,
+
+    #these are only necessary while the github repo is private
+    [Parameter(Mandatory=$True)]
+    [string] $GitHubUsername,
+
+    [Parameter(Mandatory=$True)]
+    [string] $GitHubPat
 )
 
 $ErrorActionPreference = "Stop"
 
-# Ensure the user is logged in
-try {
-    $azureContext = Get-AzureRmContext
-}
-catch {
-}
+###########################################################################
+#
+# Connect-AzureSubscription - gets current Azure context or triggers a 
+# user log in to Azure. Selects the Azure subscription for creation of 
+# the virutal machine
+# 
+Function Connect-AzureSubscription() {
+    # Ensure the user is logged in
+    try {
+        $azureContext = Get-AzureRmContext
+    }
+    catch {
+    }
 
-if (!$azureContext -or !$azureContext.Account) {
-    Login-AzureRmAccount
-    $azureContext = Get-AzureRmContext
-}
+    if (!$azureContext -or !$azureContext.Account) {
+        Login-AzureRmAccount
+        $azureContext = Get-AzureRmContext
+    }
 
-# Ensure the desired subscription is selected
-if ($azureContext.Subscription.SubscriptionId -ne $SubscriptionId) {
-    Write-Host "Selecting subscription $SubscriptionId"
-    Select-AzureRmSubscription -SubscriptionId $SubscriptionId | Out-Null
-}
-
-Write-Host "You are about to create a virtual machine in Azure in subscription $SubscriptionId, resource group $ResourceGroupName, in the '$Location' region."
-$confirmation = Read-Host -Prompt "Do you wish to proceed? Type 'yes' to confirm"
-if ($confirmation -ne 'yes') {
-    Write-Host "Exiting"
-    return
-}
-
-# Get or create resource group
-$rg = Get-AzureRmResourceGroup $ResourceGroupName -ErrorAction Ignore
-if (!$rg) {
-    $rg = New-AzureRmResourceGroup $ResourceGroupName -Location $Location
+    # Ensure the desired subscription is selected
+    if ($azureContext.Subscription.SubscriptionId -ne $SubscriptionId) {
+        Write-Host "Selecting subscription $SubscriptionId"
+        Select-AzureRmSubscription -SubscriptionId $SubscriptionId | Out-Null
+    }
 }
 
-# Submit the ARM template deployment
-$randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | % {[char]$_})
-$deploymentName = "IotEdgeMlDemoVm-$randomSuffix"
-$params = @{
-    "location"      = $Location
-    "adminUsername" = $AdminUsername
+###########################################################################
+#
+# Confirm-Create - confirms that the user wants to continue with the 
+# creation of the ivirtual machine.
+# 
+Function Confirm-Create() {
+    Write-Host @"
+    
+You are about to create a virtual machine in Azure
+    Subscription: $SubscriptionId
+    Resource group: $ResourceGroupName
+    Location: '$Location'
+
+Are you sure you want to continue?
+"@
+    while ($True) {
+        $answer = Read-Host @"
+    [Y] Yes [N] No (default is "Y")
+"@
+        switch ($Answer) {
+            "Y" { return}
+            "" { return}
+            "N" { exit }
+        }
+    }
 }
 
-Write-Host "`nStarting deployment of the demo VM which may take a while."
-Write-Host "`nProgress can be monitored from the Azure Portal (portal.azure.com)."
-Write-Host "Find the resource group $ResourceGroupName in $SubscriptionId subscription, and look in the Deployments menu for a deployment named $deploymentName."
-$deployment = New-AzureRmResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rg.ResourceGroupName -TemplateFile '.\IoTEdgeMLDemoVMTemplate.json' -TemplateParameterObject $params
-$vmName = $deployment.Outputs.vmName.value
+###########################################################################
+#
+# Get-ResourceGroup - Finds or creates the resource group to be used by the
+# deployment
+# 
+Function Get-ResourceGroup() {
+    # Get or create resource group
+    $rg = Get-AzureRmResourceGroup $ResourceGroupName -ErrorAction Ignore
+    if (!$rg) {
+        $rg = New-AzureRmResourceGroup $ResourceGroupName -Location $Location
+    }
+    return $rg
+}
 
-Write-Host "Turning on Hyper-V"
-Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Enable-HyperV.ps1'
+###########################################################################
+#
+# Invoke-VmDeployment - Uses the .\IoTEdgeMlDemoVMTemplate.json template to 
+# create a virtual machine.  Returns the name of the virtual machine
+# 
+Function Invoke-VmDeployment($resourceGroup) {
+    # Submit the ARM template deployment
+    $randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | ForEach-Object {[char]$_})
+    $deploymentName = "IotEdgeMlDemoVm-$randomSuffix"
+    $params = @{
+        "location"      = $Location
+        "adminUsername" = $AdminUsername
+        "adminPassword" = $AdminPassword
+    }
 
-Write-Host "Restart Virtual Machine"
-Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 
+    Write-Host @"
+`nStarting deployment of the demo VM which may take a while.
+Progress can be monitored from the Azure Portal (http://portal.azure.com).
+    Find the resource group $ResourceGroupName in $SubscriptionId subscription.
+    In the Deployments page open deployment $deploymentName.
+"@
 
-$azureVM = Get-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName
-$vmFQDN = ($azureVM | Foreach-Object{Get-AzureRmPublicIpAddress -ResourceGroupName $_.ResourceGroupName} | Select-Object @{Name="FQDN"; Expression={$_.DnsSettings.Fqdn}}).FQDN
+    $deployment = New-AzureRmResourceGroupDeployment -Name $deploymentName -ResourceGroupName $resourceGroup.ResourceGroupName -TemplateFile '.\IoTEdgeMLDemoVMTemplate.json' -TemplateParameterObject $params
+    return $deployment.Outputs.vmName.value
+}
 
-$rdpContent = @"
+###########################################################################
+#
+# Enable-HyperV -- Uses the vmname to enable Hyper-V on the VM
+# 
+Function Enable-HyperV($vmName) {
+    Write-Host "`nEnable Hyper-V on Azure VM"
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Enable-HyperV.ps1'
+    Write-Host "`nInstall Chocolatey on Azure VM"
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-Chocolatey.ps1'
+    Write-Host "`nInstall necessary software Azure VM"
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{"AdminUserName"=$AdminUsername; "GitHubUserName"=$GitHubUsername; "GitHubPat"=$GitHubPat}
+  
+    Write-Host "Restart Virtual Machine"
+    Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 
+}
+
+###########################################################################
+#
+# Export-RdpFile -- Uses the vmname to find the virutal machine's FQDN then 
+# writes an RDP file to rdpFilePath 
+# 
+Function Export-RdpFile($vmName, $rdpFilePath) {
+    
+    Write-Host("`nWrite RDP file to: $rdpFilePath")
+    $vmFQDN = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName | Get-AzureRmPublicIpAddress).DnsSettings.FQDN 3> $null
+
+    $rdpContent = @"
 full address:s:$($vmFQDN):3389
 prompt for credentials:i:1
 username:s:$vmName\$AdminUsername
 "@
+    
+    Set-Content -Path $rdpFilePath -Value $rdpContent
+}
 
-Set-Content -Path ".\$($vmName).rdp" -Value $rdpContent
+###########################################################################
+#
+# Main 
+# 
 
-Write-Host "The VM is ready."
-Write-Host "Visit the Azure Portal (http://portal.azure.com)."
-Write-Host "Find the resource group $ResourceGroupName in $SubscriptionId subscription"
-Write-Host "In $ResourceGroupName and find your VM named $vmName."
-Write-Host "Use the Connect button to download an RDP file."
-Write-Host "When logging in, remember to use the username and password supplied to this script."
+Connect-AzureSubscription
 
-Write-Warning "`nPlease note this VM was configured with a shutdown schedule. Review it on the VM blade to confirm the settings work for you."
+Confirm-Create
+
+$resourceGroup = Get-ResourceGroup
+
+$vmName = Invoke-VmDeployment $resourceGroup
+
+Enable-HyperV $vmName
+$rdpFilePath = [io.path]::combine($pwd, "$vmName.rdp")
+Export-RdpFile $vmName $rdpFilePath
+
+Write-Host @"
+
+The VM is ready.
+Visit the Azure Portal (http://portal.azure.com).
+    Virtual machine name: $vmName
+    Resource group: $ResourceGroupName
+    Subscription: $SubscriptionId
+
+Use the RDP file: $rdpFilePath to connect to the virtual machine.
+
+"@
+Write-Warning "Please note this VM was configured with a shutdown schedule. Review it on the VM blade to confirm the settings work for you."
