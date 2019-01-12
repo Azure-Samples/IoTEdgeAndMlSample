@@ -1,5 +1,16 @@
-#install and configure chocolatey
-Start-Process -FilePath "powershell" -Wait -NoNewWindow -ArgumentList "Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+
+param
+(
+    [string]
+    $AdminUsername,
+    
+    #only necessary until we make the github repo public
+    [string]
+    $GitHubUserName,
+    [string]
+    $GitHubPat
+)
+
 
 #refresh path after chocolatey install
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
@@ -8,6 +19,9 @@ choco feature enable -n allowGlobalConfirmation
 
 #install docker for windows
 cinst docker-desktop
+
+#add user to local docker users group
+Add-LocalGroupMember -Group docker-users -Member $AdminUsername
 
 #install visual studio code
 cinst vscode
@@ -30,7 +44,7 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";
 
 mkdir c:\source
 Push-Location \source
-& "C:\Program Files\Git\cmd\git.exe" clone https://iote2e@dev.azure.com/iote2e/e2e/_git/EdgeAndMl
+& "C:\Program Files\Git\cmd\git.exe" clone https://$($GitHubUserName):$($GitHubPat)@github.com/Azure-Samples/IoTEdgeAndMlSample.git  
 Pop-Location
 
 #add python scripts to the path
