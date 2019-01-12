@@ -7,7 +7,7 @@ namespace DeviceHarness
 {
     class Program
     {
-        //dotnet run -x "<your connection string>" -t "FDOO4"
+        //dotnet run -x "<your connection string>" -t "FDOO3"
         private static List<TurbofanDevice> devices = new List<TurbofanDevice>();
         private static List<Task> deviceTasks = new List<Task>();
 
