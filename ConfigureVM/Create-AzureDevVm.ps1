@@ -167,7 +167,8 @@ $resourceGroup = Get-ResourceGroup
 $vmName = Invoke-VmDeployment $resourceGroup
 
 Install-Software $vmName
-$rdpFilePath = [io.path]::combine($pwd, "$vmName.rdp")
+$desktop = [Environment]::GetFolderPath("Desktop")
+$rdpFilePath = [io.path]::combine($desktop, "$vmName.rdp")
 Export-RdpFile $vmName $rdpFilePath
 
 Write-Host @"
