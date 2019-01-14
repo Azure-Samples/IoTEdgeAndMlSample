@@ -7,7 +7,7 @@
         },
         "virtualMachineName": {
             "type": "string",
-            "defaultValue": "[take(concat('IoTMLDemo', uniqueString(resourceGroup().id, subscription().subscriptionId)), 15)]"
+            "defaultValue": "[take(concat('IoTMLDemo-', uniqueString(resourceGroup().id, subscription().subscriptionId)), 15)]"
         },
         "adminUsername": {
             "type": "string"
