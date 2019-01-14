@@ -12,14 +12,14 @@ param
     [Parameter(Mandatory = $True)]
     [string] $AdminUsername,
 
-    [Parameter(Mandatory=$True)]
+    [Parameter(Mandatory = $True)]
     [securestring] $AdminPassword,
 
     #these are only necessary while the github repo is private
-    [Parameter(Mandatory=$True)]
+    [Parameter(Mandatory = $True)]
     [string] $GitHubUsername,
 
-    [Parameter(Mandatory=$True)]
+    [Parameter(Mandatory = $True)]
     [string] $GitHubPat
 )
 
@@ -40,6 +40,7 @@ Function Connect-AzureSubscription() {
     }
 
     if (!$azureContext -or !$azureContext.Account) {
+        Write-Host "Please login to Azure..."
         Login-AzureRmAccount
         $azureContext = Get-AzureRmContext
     }
@@ -59,20 +60,22 @@ Function Connect-AzureSubscription() {
 Function Confirm-Create() {
     Write-Host @"
     
-You are about to create a virtual machine in Azure
-    Subscription: $SubscriptionId
-    Resource group: $ResourceGroupName
-    Location: '$Location'
+You are about to create a virtual machine in Azure:
+    - Subscription $SubscriptionId
+    - Resource group $ResourceGroupName
+    - Location '$Location'
 
 Are you sure you want to continue?
 "@
+
     while ($True) {
         $answer = Read-Host @"
     [Y] Yes [N] No (default is "Y")
 "@
+
         switch ($Answer) {
-            "Y" { return}
-            "" { return}
+            "Y" { return }
+            "" { return }
             "N" { exit }
         }
     }
@@ -81,7 +84,7 @@ Are you sure you want to continue?
 ###########################################################################
 #
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
-# deployment
+# deployment.
 # 
 Function Get-ResourceGroup() {
     # Get or create resource group
@@ -95,7 +98,7 @@ Function Get-ResourceGroup() {
 ###########################################################################
 #
 # Invoke-VmDeployment - Uses the .\IoTEdgeMlDemoVMTemplate.json template to 
-# create a virtual machine.  Returns the name of the virtual machine
+# create a virtual machine.  Returns the name of the virtual machine.
 # 
 Function Invoke-VmDeployment($resourceGroup) {
     # Submit the ARM template deployment
@@ -110,8 +113,8 @@ Function Invoke-VmDeployment($resourceGroup) {
     Write-Host @"
 `nStarting deployment of the demo VM which may take a while.
 Progress can be monitored from the Azure Portal (http://portal.azure.com).
-    Find the resource group $ResourceGroupName in $SubscriptionId subscription.
-    In the Deployments page open deployment $deploymentName.
+    1. Find the resource group $ResourceGroupName in $SubscriptionId subscription.
+    2. In the Deployments page open deployment $deploymentName.
 "@
 
     $deployment = New-AzureRmResourceGroupDeployment -Name $deploymentName -ResourceGroupName $resourceGroup.ResourceGroupName -TemplateFile '.\IoTEdgeMLDemoVMTemplate.json' -TemplateParameterObject $params
@@ -120,28 +123,28 @@ Progress can be monitored from the Azure Portal (http://portal.azure.com).
 
 ###########################################################################
 #
-# Enable-HyperV -- Uses the vmname to enable Hyper-V on the VM
+# Enable-HyperV -- Uses the vmname to enable Hyper-V on the VM.
 # 
 Function Install-Software($vmName) {
-    Write-Host "`nEnable Hyper-V on Azure VM"
-    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Enable-HyperV.ps1'
-    Write-Host "`nInstall Chocolatey on Azure VM"
-    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-Chocolatey.ps1'
-    Write-Host "`nInstall necessary software Azure VM"
-    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{"AdminUserName"=$AdminUsername; "GitHubUserName"=$GitHubUsername; "GitHubPat"=$GitHubPat}
+    Write-Host "`nEnabling Hyper-V on Azure VM..."
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Enable-HyperV.ps1' 2>&1>$null
+    Write-Host "`nInstalling Chocolatey on Azure VM..."
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-Chocolatey.ps1' 2>&1>$null
+    Write-Host "`nInstalling necessary software Azure VM..."
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{"AdminUserName"=$AdminUsername; "GitHubUserName"=$GitHubUsername; "GitHubPat"=$GitHubPat} 2>&1>$null
   
-    Write-Host "Restart Virtual Machine"
-    Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 
+    Write-Host "`nRestarting the VM..."
+    Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 2>&1>$null
 }
 
 ###########################################################################
 #
 # Export-RdpFile -- Uses the vmname to find the virutal machine's FQDN then 
-# writes an RDP file to rdpFilePath 
+# writes an RDP file to rdpFilePath.
 # 
 Function Export-RdpFile($vmName, $rdpFilePath) {
     
-    Write-Host("`nWrite RDP file to: $rdpFilePath")
+    Write-Host "`nWriting the VM RDP file to $rdpFilePath"
     $vmFQDN = (Get-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName | Get-AzureRmPublicIpAddress).DnsSettings.FQDN 3> $null
 
     $rdpContent = @"
@@ -168,16 +171,16 @@ $vmName = Invoke-VmDeployment $resourceGroup
 
 Install-Software $vmName
 $desktop = [Environment]::GetFolderPath("Desktop")
-$rdpFilePath = [io.path]::combine($desktop, "$vmName.rdp")
+$rdpFilePath = [IO.Path]::Combine($desktop, "$vmName.rdp")
 Export-RdpFile $vmName $rdpFilePath
 
 Write-Host @"
 
 The VM is ready.
 Visit the Azure Portal (http://portal.azure.com).
-    Virtual machine name: $vmName
-    Resource group: $ResourceGroupName
-    Subscription: $SubscriptionId
+    - Virtual machine name: $vmName
+    - Resource group: $ResourceGroupName
+    - Subscription: $SubscriptionId
 
 Use the RDP file: $rdpFilePath to connect to the virtual machine.
 
