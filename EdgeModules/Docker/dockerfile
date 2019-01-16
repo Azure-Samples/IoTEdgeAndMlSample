@@ -1,0 +1,18 @@
+FROM centos
+
+RUN mkdir /work
+
+RUN yum -y install openssl git \
+    && git clone https://github.com/Azure/azure-iot-sdk-c.git /source/azure-iot-sdk-c
+
+RUN cp /source/azure-iot-sdk-c/tools/CACertificates/*.cnf /work \
+    && cp /source/azure-iot-sdk-c/tools/CACertificates/certGen.sh /work
+
+COPY startup.sh /work
+
+WORKDIR /work
+
+RUN chmod 700 certGen.sh \ 
+ && chmod 700 startup.sh
+
+ENTRYPOINT [ "/work/startup.sh" ]
