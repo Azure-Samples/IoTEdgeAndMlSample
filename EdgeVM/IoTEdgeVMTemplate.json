@@ -7,7 +7,7 @@
         },
         "virtualMachineName": {
             "type": "string",
-            "defaultValue": "[take(concat('IoTMLDemo-', uniqueString(resourceGroup().id, subscription().subscriptionId)), 15)]"
+            "defaultValue": "[take(concat('IoTEdge-', uniqueString(resourceGroup().id, subscription().subscriptionId)), 15)]"
         },
         "adminUsername": {
             "type": "string"
@@ -77,7 +77,7 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "RDP",
+                        "name": "SSH",
                         "properties": {
                             "priority": 300,
                             "protocol": "Tcp",
@@ -86,7 +86,7 @@
                             "sourceAddressPrefix": "*",
                             "sourcePortRange": "*",
                             "destinationAddressPrefix": "*",
-                            "destinationPortRange": "3389"
+                            "destinationPortRange": "22"
                         }
                     }
                 ]
@@ -142,7 +142,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_D8s_v3"
+                    "vmSize": "Standard_B2s"
                 },
                 "storageProfile": {
                     "osDisk": {
@@ -153,9 +153,9 @@
                         }
                     },
                     "imageReference": {
-                        "publisher": "MicrosoftWindowsDesktop",
-                        "offer": "Windows-10",
-                        "sku": "rs5-pro",
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
                         "version": "latest"
                     }
                 },
@@ -169,13 +169,8 @@
                 "osProfile": {
                     "computerName": "[parameters('virtualMachineName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "enableAutomaticUpdates": true,
-                        "provisionVmAgent": true
-                    }
-                },
-                "licenseType": "Windows_Client"
+                    "adminPassword": "[parameters('adminPassword')]"
+                }
             }
         },
         {
