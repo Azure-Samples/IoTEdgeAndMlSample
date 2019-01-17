@@ -32,6 +32,9 @@ cinst miniconda3
 #install dotnet core sdk with cli
 cinst dotnetcore-sdk
 
+#install azure powershell
+cinst azurepowershell
+
 #install storage explorer
 cinst microsoftazurestorageexplorer 
 
