@@ -116,6 +116,15 @@ Progress can be monitored from the Azure Portal (http://portal.azure.com).
 
 ###########################################################################
 #
+# Install-Software -- Installs apt-get packages on the target VM
+# 
+Function Install-Software($vmName) {
+    Write-Host "`nInstalling apt-get packages..."
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunShellScript" -ScriptPath '.\installpackages.sh'
+}
+
+###########################################################################
+#
 # Get-SshCommand -- Uses the vmname to find the virutal machine's FQDN then 
 # returns the ssh command to connect to the VM console.
 # 
@@ -138,6 +147,8 @@ Confirm-Create
 $resourceGroup = Get-ResourceGroup
 
 $vmName = Invoke-VmDeployment $resourceGroup
+
+Install-Software $vmName
 
 $ssh = Get-SshCommand $AdminUsername $vmName
 
