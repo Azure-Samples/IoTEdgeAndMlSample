@@ -6,7 +6,7 @@ param
     [Parameter(Mandatory = $True)]
     [string] $KeyVaultName,
     
-    [Parameter]
+    [Parameter()]
     [string] $CertificateRoot = "C:\edgecertificates"
 
 )
