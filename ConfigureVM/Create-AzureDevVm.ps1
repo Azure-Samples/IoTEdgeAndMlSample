@@ -29,7 +29,7 @@ $ErrorActionPreference = "Stop"
 #
 # Connect-AzureSubscription - gets current Azure context or triggers a 
 # user log in to Azure. Selects the Azure subscription for creation of 
-# the virutal machine
+# the virtual machine
 # 
 Function Connect-AzureSubscription() {
     # Ensure the user is logged in
