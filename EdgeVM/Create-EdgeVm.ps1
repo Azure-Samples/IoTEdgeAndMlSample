@@ -96,7 +96,7 @@ Function Get-ResourceGroup() {
 Function Invoke-VmDeployment($resourceGroup) {
     # Submit the ARM template deployment
     $randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | ForEach-Object {[char]$_})
-    $deploymentName = "IotEdgeMlDemoVm-$randomSuffix"
+    $deploymentName = "IotEdgeVm-$randomSuffix"
     $params = @{
         "location"      = $Location
         "adminUsername" = $AdminUsername
