@@ -1,34 +1,23 @@
 #!/bin/bash
 
-echo "Installing repository configuration"
-curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > ./microsoft-prod.list
-sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/
+# wait while apt-get installs complete
+while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do sleep 1; done
 
-echo "Installing Microsoft GPG public key"
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/
-
-echo "Performing apt upgrade"
-sudo apt-get upgrade
-
-echo "Update apt-get"
+echo "Install Azure CLI"
+# Install prerequisite packages
 sudo apt-get update
+sudo apt-get install -y apt-transport-https lsb-release software-properties-common dirmngr -y
 
-echo "Install the Moby engine"
-sudo apt-get install -y moby-engine
+# Modify your sources list
+AZ_REPO=$(lsb_release -cs)
+echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
+    sudo tee /etc/apt/sources.list.d/azure-cli.list
 
-echo "Install the Moby command-line interface (CLI)"
-sudo apt-get install -y moby-cli
+# Get the Microsoft signing key
+sudo apt-key --keyring /etc/apt/trusted.gpg.d/Microsoft.gpg adv \
+     --keyserver packages.microsoft.com \
+     --recv-keys BC528686B50D79E339D3721CEB3E94ADBE1229CF
 
-echo "Update apt-get"
+# Install the CLI
 sudo apt-get update
-
-echo "Install the Docker engine"
-sudo apt-get install -y docker
-
-echo "Update apt-get"
-sudo apt-get update
-
-echo "Install the security daemon"
-# package is installed at /etc/iotedge
-sudo apt-get install -y iotedge
+sudo apt-get install -y azure-cli
