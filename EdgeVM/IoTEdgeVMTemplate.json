@@ -153,10 +153,10 @@
                         }
                     },
                     "imageReference": {
-                        "publisher": "Canonical",
-                        "offer": "UbuntuServer",
-                        "sku": "18.04-LTS",
-                        "version": "latest"
+                        "publisher": "microsoft_iot_edge",
+                        "offer": "iot_edge_vm_ubuntu",
+                        "sku": "ubuntu_1604_edgeruntimeonly",
+                        "version": "1.0.1"
                     }
                 },
                 "networkProfile": {
@@ -171,6 +171,11 @@
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 }
+            },
+            "plan": {
+                "name": "ubuntu_1604_edgeruntimeonly",
+                "publisher": "microsoft_iot_edge",
+                "product": "iot_edge_vm_ubuntu"
             }
         },
         {
