@@ -14,10 +14,10 @@ namespace Microsoft.Azure.IoT.Samples
 
         public SensorArray()
         {
-            loadDeviceData();
+            LoadDeviceData();
         }
 
-        private void loadDeviceData()
+        private void LoadDeviceData()
         {
             string dataSetFileName = PickRandomDataFile();
             string deviceId = GetRandomDevice();

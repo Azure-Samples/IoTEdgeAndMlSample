@@ -333,3 +333,4 @@ ASALocalRun/
 #vscode
 **/tasks.json
 **/launch.json
+*.pem
