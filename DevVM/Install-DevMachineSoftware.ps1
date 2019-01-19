@@ -1,12 +1,16 @@
 
 param
 (
+    [Parameter(Mandatory = $True)]
     [string]
     $AdminUsername,
     
     #only necessary until we make the github repo public
+    [Parameter(Mandatory = $True)]
     [string]
     $GitHubUserName,
+
+    [Parameter(Mandatory = $True)]
     [string]
     $GitHubPat
 )
@@ -45,10 +49,20 @@ cinst git-credential-manager-for-windows
 #refresh path again for chocolatey package installs
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
-mkdir c:\source
-Push-Location \source
-& "C:\Program Files\Git\cmd\git.exe" clone https://$($GitHubUserName):$($GitHubPat)@github.com/Azure-Samples/IoTEdgeAndMlSample.git  
+$sourceRoot = "c:\source"
+if (!(Test-Path $sourceRoot)) {
+    mkdir $sourceRoot
+}
+
+Push-Location $sourceRoot
+$repoName = "IoTEdgeAndMlSample"
+if (!(Test-Path $repoName)) {
+    & "C:\Program Files\Git\cmd\git.exe" clone https://$($GitHubUserName):$($GitHubPat)@github.com/Azure-Samples/$repoName.git
+}
 Pop-Location
 
 #add python scripts to the path
-[Environment]::SetEnvironmentVariable("Path", "$($env:Path);$($env:userprofile)\AppData\Roaming\Python\Python37\scripts", [EnvironmentVariableTarget]::Machine)
+$pythonPath = "$($env:Path);$($env:userprofile)\AppData\Roaming\Python\Python37\scripts"
+if (!$env:Path.Contains($pythonPath)) {
+    [Environment]::SetEnvironmentVariable("Path", $pythonPath, [EnvironmentVariableTarget]::Machine)
+}
