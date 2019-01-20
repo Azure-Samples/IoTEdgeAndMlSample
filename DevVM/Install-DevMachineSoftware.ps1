@@ -59,10 +59,9 @@ $repoName = "IoTEdgeAndMlSample"
 if (!(Test-Path $repoName)) {
     & "C:\Program Files\Git\cmd\git.exe" clone https://$($GitHubUserName):$($GitHubPat)@github.com/Azure-Samples/$repoName.git
 }
-
 Pop-Location
 
-#add python scripts to the path	
+#add python scripts to the path
 $pythonPath = "$($env:Path);$($env:userprofile)\AppData\Roaming\Python\Python37\scripts"
 if (!$env:Path.Contains($pythonPath)) {
     [Environment]::SetEnvironmentVariable("Path", $pythonPath, [EnvironmentVariableTarget]::Machine)
