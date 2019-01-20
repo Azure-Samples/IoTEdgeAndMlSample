@@ -63,7 +63,7 @@ if (!(Test-Path $repoName)) {
 Pop-Location
 
 #add python scripts to the path	
-$pythonPath = "$($env:Path);$($env:userprofile)\AppData\Roaming\Python\Python37\scripts"	
-if (!$env:Path.Contains($pythonPath)) {	
-    [Environment]::SetEnvironmentVariable("Path", $pythonPath, [EnvironmentVariableTarget]::Machine)	
-} 
+$pythonPath = "$($env:Path);$($env:userprofile)\AppData\Roaming\Python\Python37\scripts"
+if (!$env:Path.Contains($pythonPath)) {
+    [Environment]::SetEnvironmentVariable("Path", $pythonPath, [EnvironmentVariableTarget]::Machine)
+}
