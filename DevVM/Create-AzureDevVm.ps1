@@ -136,7 +136,7 @@ Function Invoke-VmDeployment($resourceGroup) {
     Write-Host @"
 `nStarting deployment of the demo VM which may take a while.
 Progress can be monitored from the Azure Portal (http://portal.azure.com).
-    1. Find the resource group $ResourceGroupName in $SubscriptionId subscription.
+    1. Find the resource group $ResourceGroupName in $SubscriptionId ($($subName.Name)) subscription.
     2. In the Deployments page open deployment $deploymentName.
 "@
 
