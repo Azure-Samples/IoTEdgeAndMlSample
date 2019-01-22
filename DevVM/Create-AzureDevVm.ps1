@@ -84,7 +84,7 @@ Function Confirm-Create() {
     Write-Host @"
     
 You are about to create a virtual machine in Azure:
-    - Subscription $SubscriptionId
+    - Subscription $SubscriptionId ($($subName.Name))
     - Resource group $ResourceGroupName
     - Location '$Location'
 
@@ -187,6 +187,7 @@ username:s:$vmName\$AdminUsername
 Install-AzurePowerShell
 
 Connect-AzureSubscription
+$subName = Get-AzureRmSubscription -SubscriptionId $SubscriptionId
 
 Confirm-Create
 
@@ -205,7 +206,7 @@ The VM is ready.
 Visit the Azure Portal (http://portal.azure.com).
     - Virtual machine name: $vmName
     - Resource group: $ResourceGroupName
-    - Subscription: $SubscriptionId
+    - Subscription: $SubscriptionId ($($subName.Name))
 
 Use the RDP file: $rdpFilePath to connect to the virtual machine.
 
