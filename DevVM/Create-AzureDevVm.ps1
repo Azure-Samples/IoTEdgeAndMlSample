@@ -25,6 +25,29 @@ param
 
 $ErrorActionPreference = "Stop"
 
+
+###########################################################################
+#
+# Install-AzurePowerShell - ensures that Azure Powershell module is 
+# installed and configured.
+# 
+Function Install-AzurePowerShell() {
+    if (Get-Module -ListAvailable -Name AzureRM) { 
+        Write-Host "Found AzureRm; skipping install..." 
+        return
+    }
+
+    $azModule = Get-Module -ListAvailable -Name Az.Accounts
+    if (!$azModule -or !$azModule.version -lt 0.7.0.0)
+    {
+        Write-Host "Installing Az PowerShell"
+        Install-Module -Name Az -AllowClobber
+    }
+
+    Write-Host "Enabling AzureRm PowerShell alias"
+    Enable-AzureRmAlias -Scope Process
+}
+
 ###########################################################################
 #
 # Connect-AzureSubscription - gets current Azure context or triggers a 
@@ -131,7 +154,7 @@ Function Install-Software($vmName) {
     Write-Host "`nInstalling Chocolatey on Azure VM..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-Chocolatey.ps1' 2>&1>$null
     Write-Host "`nInstalling necessary software Azure VM..."
-    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{"AdminUserName"=$AdminUsername; "GitHubUserName"=$GitHubUsername; "GitHubPat"=$GitHubPat} 2>&1>$null
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{"AdminUserName" = $AdminUsername; "GitHubUserName" = $GitHubUsername; "GitHubPat" = $GitHubPat} 2>&1>$null
   
     Write-Host "`nRestarting the VM..."
     Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 2>&1>$null
@@ -160,6 +183,8 @@ username:s:$vmName\$AdminUsername
 #
 # Main 
 # 
+
+Install-AzurePowerShell
 
 Connect-AzureSubscription
 
