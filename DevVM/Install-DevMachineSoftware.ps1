@@ -30,8 +30,8 @@ Add-LocalGroupMember -Group docker-users -Member $AdminUsername
 #install visual studio code
 cinst vscode
 
-#install conda to manage python environments
-cinst miniconda3
+#install python
+cinst python
 
 #install dotnet core sdk with cli
 cinst dotnetcore-sdk
