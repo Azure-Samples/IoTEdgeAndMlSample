@@ -13,4 +13,5 @@ code --install-extension ms-vscode.csharp
 #docker extension
 code --install-extension peterjausovec.vscode-docker
 
+#powershell extension
 code --install-extension ms-vscode.PowerShell

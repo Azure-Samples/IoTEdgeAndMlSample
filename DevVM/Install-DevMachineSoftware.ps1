@@ -1,4 +1,3 @@
-
 param
 (
     [Parameter(Mandatory = $True)]
@@ -14,7 +13,6 @@ param
     [string]
     $GitHubPat
 )
-
 
 #refresh path after chocolatey install
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
@@ -38,9 +36,6 @@ cinst dotnetcore-sdk
 
 #install azure powershell
 cinst azurepowershell
-
-#install storage explorer
-cinst microsoftazurestorageexplorer 
 
 #install and sync git
 cinst git
