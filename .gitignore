@@ -334,3 +334,6 @@ ASALocalRun/
 **/tasks.json
 **/launch.json
 *.pem
+
+# ignore the solution the walk-through has the user create
+EdgeSolution/*
