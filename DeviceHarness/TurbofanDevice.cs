@@ -25,7 +25,7 @@ namespace DeviceHarness
     /// </summary>
     public class TurbofanDevice
     {
-        private static readonly TimeSpan CycleTime = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan CycleTime = TimeSpan.FromMilliseconds(1);
         private readonly int deviceUnitNumber;
         private readonly string deviceConnectionString;
         private readonly TrainingFileManager trainingFileManager;
