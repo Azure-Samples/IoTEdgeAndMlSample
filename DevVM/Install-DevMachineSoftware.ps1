@@ -13,16 +13,7 @@ param
 (
     [Parameter(Mandatory = $True)]
     [string]
-    $AdminUsername,
-    
-    #only necessary until we make the github repo public
-    [Parameter(Mandatory = $True)]
-    [string]
-    $GitHubUserName,
-
-    [Parameter(Mandatory = $True)]
-    [string]
-    $GitHubPat
+    $AdminUsername
 )
 
 # refresh path after chocolatey install
@@ -63,7 +54,7 @@ if (!(Test-Path $sourceRoot)) {
 Push-Location $sourceRoot
 $repoName = "IoTEdgeAndMlSample"
 if (!(Test-Path $repoName)) {
-    & "C:\Program Files\Git\cmd\git.exe" clone https://$($GitHubUserName):$($GitHubPat)@github.com/Azure-Samples/$repoName.git
+    & "C:\Program Files\Git\cmd\git.exe" clone https://github.com/Azure-Samples/$repoName.git
 }
 Pop-Location
 
