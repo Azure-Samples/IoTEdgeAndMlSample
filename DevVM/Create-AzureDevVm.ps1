@@ -7,6 +7,7 @@ param
     [string] $ResourceGroupName,
 
     [Parameter(Mandatory = $True)]
+    [ValidateSet("Australia East", "East US", "East US 2", "South Central US", "Southeast Asia", "West Europe", "West Central US", "West US 2")]
     [string] $Location,
 
     [Parameter(Mandatory = $True)]
