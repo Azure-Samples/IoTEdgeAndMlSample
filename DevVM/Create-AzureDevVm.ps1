@@ -25,14 +25,7 @@ param
     [string] $AdminUsername,
 
     [Parameter(Mandatory = $True)]
-    [securestring] $AdminPassword,
-
-    #these are only necessary while the github repo is private
-    [Parameter(Mandatory = $True)]
-    [string] $GitHubUsername,
-
-    [Parameter(Mandatory = $True)]
-    [string] $GitHubPat
+    [securestring] $AdminPassword
 )
 
 $ErrorActionPreference = "Stop"
@@ -166,7 +159,7 @@ Function Install-Software($vmName) {
     Write-Host "`nInstalling Chocolatey on Azure VM..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-Chocolatey.ps1' 2>&1>$null
     Write-Host "`nInstalling necessary software Azure VM..."
-    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{"AdminUserName" = $AdminUsername; "GitHubUserName" = $GitHubUsername; "GitHubPat" = $GitHubPat} 2>&1>$null
+    Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{ "AdminUserName" = $AdminUsername; } 2>&1>$null
   
     Write-Host "`nRestarting the VM..."
     Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 2>&1>$null
