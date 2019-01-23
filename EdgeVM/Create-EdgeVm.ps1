@@ -18,6 +18,7 @@ param
     [string] $ResourceGroupName,
 
     [Parameter(Mandatory = $True)]
+    [ValidateSet("Australia East", "East US", "East US 2", "South Central US", "Southeast Asia", "West Europe", "West Central US", "West US 2")]
     [string] $Location,
 
     [Parameter(Mandatory = $True)]
@@ -65,7 +66,7 @@ Function Confirm-Create() {
     Write-Host @"
     
 You are about to create a virtual machine in Azure:
-    - Subscription $SubscriptionId
+    - Subscription $SubscriptionId ($($subName.Name))
     - Resource group $ResourceGroupName
     - Location '$Location'
 
@@ -152,6 +153,7 @@ Function Get-SshCommand($user, $vmName) {
 # 
 
 Connect-AzureSubscription
+$subName = Get-AzureRmSubscription -SubscriptionId $SubscriptionId
 
 Confirm-Create
 
@@ -169,7 +171,7 @@ The VM is ready.
 Visit the Azure Portal (http://portal.azure.com).
     - Virtual machine name: $vmName
     - Resource group: $ResourceGroupName
-    - Subscription: $SubscriptionId
+    - Subscription: $SubscriptionId ($($subName.Name))
     - Connect with: $ssh
 
 "@
