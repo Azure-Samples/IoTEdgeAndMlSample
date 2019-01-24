@@ -7,7 +7,7 @@ Frequently, IoT applications want to take advantage of the intelligent cloud and
 The detailed walk-through instructions for this sample can be found in the [EdgeAndMlWalkthrough.pdf](./EdgeAndMlWalkthrough.pdf).
 
 At a high-level the sample has the following steps:
-1. Set up development machine - [Dev VM](./DevVm) folder
+1. Set up development machine - [Dev VM](./DevVM) folder
 1. Add IoT Hub and configure storage
 1. Generate device data and send to IoT Hub [Device Harness](./DeviceHarness) folder
 1. Train and deploy ML model [Azure Notebooks](./AzureNotebooks)
