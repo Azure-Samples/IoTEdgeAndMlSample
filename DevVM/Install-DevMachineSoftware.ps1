@@ -51,6 +51,7 @@ if (!(Test-Path $sourceRoot)) {
     mkdir $sourceRoot
 }
 
+# Clone this repo, if not already present
 Push-Location $sourceRoot
 $repoName = "IoTEdgeAndMlSample"
 if (!(Test-Path $repoName)) {

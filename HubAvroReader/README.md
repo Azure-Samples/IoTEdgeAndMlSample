@@ -1,6 +1,6 @@
 # Introduction
 
-The hubavroreader is a command line utility that will read Azure IoT Hub Avro files and output the contents in JSON. 
+The hubavroreader is a command line utility that will read Azure IoT Hub Avro files and output the contents in JSON.
 
 # Installation
 

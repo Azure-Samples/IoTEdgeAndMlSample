@@ -25,7 +25,7 @@ namespace DeviceHarness
     /// </summary>
     public class TurbofanDevice
     {
-        private static readonly TimeSpan CycleTime = TimeSpan.FromMilliseconds(1);
+        private static readonly TimeSpan cycleTime = TimeSpan.FromMilliseconds(1);
         private readonly int deviceUnitNumber;
         private readonly string deviceConnectionString;
         private readonly TrainingFileManager trainingFileManager;
@@ -72,7 +72,7 @@ namespace DeviceHarness
             foreach (CycleData c in cycleData)
             {
                 await SendEvent(deviceClient, c.Message).ConfigureAwait(false);
-                await Task.Delay(CycleTime).ConfigureAwait(false);
+                await Task.Delay(cycleTime).ConfigureAwait(false);
             }
         }
 
@@ -82,7 +82,6 @@ namespace DeviceHarness
         /// </summary>
         /// <param name="iotHubConnectionString">Connection string for the IoT Hub</param>
         /// <param name="deviceId">Name of the device in the IoT Hub e.g Device_001</param>
-        /// <returns></returns>
         private async Task<string> CreateIotHubDevice(string iotHubConnectionString, string deviceId)
         {
             RegistryManager regManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
@@ -107,7 +106,6 @@ namespace DeviceHarness
         {
             return trainingFileManager.ReadDeviceData(deviceUnitNumber);
         }
-
         
         /// <summary>
         /// Uses the DeviceClient to send a message to the IoT Hub

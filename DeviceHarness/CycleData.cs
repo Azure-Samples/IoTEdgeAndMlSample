@@ -18,18 +18,17 @@ using Microsoft.Azure.Devices.Client;
 namespace DeviceHarness
 {
     /// <summary>
-    /// Class to parse and model a single row of device data found in the
-    /// datasets.
+    /// Class to parse and model a single row of device data found in the datasets.
     /// </summary>
     public class CycleData
     {
-        private readonly Dictionary<string, object> Columns = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> columns = new Dictionary<string, object>();
 
         /// <summary>
         ///  Serializes the CycleData into a message in JSON format to be sent to IoT Hub
         /// </summary>
         /// <returns>JSON serialized message to send to IoT Hub</returns>
-        public string Message => JsonConvert.SerializeObject(Columns);
+        public string Message => JsonConvert.SerializeObject(columns);
 
         /// <summary>
         /// Public constructor takes an array of string representing a row of 
@@ -40,7 +39,7 @@ namespace DeviceHarness
         {
             if (cycleDataRow.Length != 26)
             {
-                throw new ArgumentOutOfRangeException("cycleDataRow", $"Expected 26 columns, but got {cycleDataRow.Length}");
+                throw new ArgumentOutOfRangeException(nameof(cycleDataRow), $"Expected 26 columns, but got {cycleDataRow.Length}");
             }
 
             if (!int.TryParse(cycleDataRow[1], out int cycle))
@@ -48,18 +47,18 @@ namespace DeviceHarness
                 throw new ApplicationException("The cycle time is invalid");
             }
 
-            Columns.Add("CycleTime", cycle);
+            columns.Add("CycleTime", cycle);
 
             for (int i = 2; i < cycleDataRow.Length; i++)
             {
                 float.TryParse(cycleDataRow[i], out float columnValue);
                 if (i <= 4) //columns 3-5 are operational settings
                 {
-                    Columns.Add($"OperationalSetting{i - 1}", columnValue);
+                    columns.Add($"OperationalSetting{i - 1}", columnValue);
                 }
                 else //remaining columns are sensor readings
                 {
-                    Columns.Add($"Sensor{i - 4}", columnValue);
+                    columns.Add($"Sensor{i - 4}", columnValue);
                 }
             }
         }
