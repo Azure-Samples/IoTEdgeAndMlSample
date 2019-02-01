@@ -46,11 +46,11 @@ namespace Microsoft.Azure.IoT.Samples
             for (int i = 2; i < cycleDataRow.Length; i++)
             {
                 float.TryParse(cycleDataRow[i], out float columnValue);
-                if (i <= 4) //columns 3-5 are operational settings
+                if (i <= 4) // columns 3-5 are operational settings
                 {
                     Columns.Add($"OperationalSetting{i - 1}", columnValue);
                 }
-                else //remaining columns are sensor readings
+                else // remaining columns are sensor readings
                 {
                     Columns.Add($"Sensor{i - 4}", columnValue);
                 }

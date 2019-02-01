@@ -24,7 +24,8 @@ using Newtonsoft.Json;
 namespace turbofanRouter
 {
     //TODO: make the log level settable via the hub
-    class EndpointNames
+
+    internal class EndpointNames
     {
         public const string ToClassifierModule = "classOutput";
         public const string ToIotHub = "hubOutput";
@@ -34,7 +35,7 @@ namespace turbofanRouter
         public const string FromLeafDevice = "deviceInput";
     }
 
-    class Program
+    public class Program
     {
         static int deviceMessageCounter;
         static int classifierCallbackCounter;
@@ -65,7 +66,7 @@ namespace turbofanRouter
         /// Initializes the ModuleClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Init()
+        internal static async Task Init()
         {
             Logger.LoggingLevel = LogSeverity.Verbose;
 
@@ -73,21 +74,27 @@ namespace turbofanRouter
             ITransportSettings[] settings = { amqpSetting };
 
             // Open a connection to the Edge runtime
-            ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-            await ioTHubModuleClient.OpenAsync();
+            ModuleClient ioTHubModuleClient = await ModuleClient
+                .CreateFromEnvironmentAsync(settings)
+                .ConfigureAwait(false);
+            await ioTHubModuleClient.OpenAsync().ConfigureAwait(false);
             Console.WriteLine("IoT Hub module client initialized.");
 
             // Register callbacks for messages to the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync(EndpointNames.FromLeafDevice, LeafDeviceInputMessageHandler, ioTHubModuleClient);
-            await ioTHubModuleClient.SetInputMessageHandlerAsync(EndpointNames.FromClassifier, ClassifierCallbackMessageHandler, ioTHubModuleClient);
+            await ioTHubModuleClient
+                .SetInputMessageHandlerAsync(EndpointNames.FromLeafDevice, LeafDeviceInputMessageHandler, ioTHubModuleClient)
+                .ConfigureAwait(false);
+            await ioTHubModuleClient
+                .SetInputMessageHandlerAsync(EndpointNames.FromClassifier, ClassifierCallbackMessageHandler, ioTHubModuleClient)
+                .ConfigureAwait(false);
 
             // Register a callback for updates to the module twin's desired properties.
-            await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
+            await ioTHubModuleClient
+                .SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null)
+                .ConfigureAwait(false);
         }
 
-
-
-        static Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
+        internal static Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
             try
             {
@@ -101,7 +108,6 @@ namespace turbofanRouter
                 {
                     Logger.LoggingLevel = newSeverity;
                 }
-
             }
             catch (AggregateException ex)
             {
@@ -114,6 +120,7 @@ namespace turbofanRouter
             {
                 Logger.Log($"Error when receiving desired property: {ex.Message}", LogSeverity.Error);
             }
+
             return Task.CompletedTask;
         }
 
@@ -121,7 +128,7 @@ namespace turbofanRouter
         /// Handles messages coming back from the classifier corresponds with route
         /// "FROM /messages/modules/classifier/outputs/amloutput INTO BrokeredEndpoint(\"/modules/turbofanRouter/inputs/rulInput\")"
         /// </summary>
-        static async Task<MessageResponse> ClassifierCallbackMessageHandler(Message message, object userContext)
+        internal static async Task<MessageResponse> ClassifierCallbackMessageHandler(Message message, object userContext)
         {
             int counterValue = Interlocked.Increment(ref classifierCallbackCounter);
             Logger.Log($"Received message on {EndpointNames.FromClassifier}; Count: {counterValue}");
@@ -131,12 +138,12 @@ namespace turbofanRouter
             if (!fanMessage.HasRemainingRul)
             {
                 Logger.Log($"Endpoint {EndpointNames.FromClassifier}: not classified, stop processing", LogSeverity.Error);
-                return await HandleBadMessage(message, moduleClient);
+                return await HandleBadMessage(message, moduleClient).ConfigureAwait(false);
             }
 
-            await SendRulMessageToIotHub(moduleClient, fanMessage);
+            await SendRulMessageToIotHub(moduleClient, fanMessage).ConfigureAwait(false);
 
-            await SendMessageToAvroWriter(moduleClient, fanMessage);
+            await SendMessageToAvroWriter(moduleClient, fanMessage).ConfigureAwait(false);
 
             return MessageResponse.Completed;
         }
@@ -145,7 +152,7 @@ namespace turbofanRouter
         /// Method to handle messages coming from a leaf device corresponds with route
         /// "FROM /messages/* WHERE NOT IS_DEFINED($connectionModuleId) INTO BrokeredEndpoint(\"/modules/turbofanRouter/inputs/deviceInput\")"
         /// </summary>
-        static async Task<MessageResponse> LeafDeviceInputMessageHandler(Message message, object userContext)
+        internal static async Task<MessageResponse> LeafDeviceInputMessageHandler(Message message, object userContext)
         {
             int counterValue = Interlocked.Increment(ref deviceMessageCounter);
             Logger.Log($"Received message on {EndpointNames.FromLeafDevice}; Count: {counterValue}");
@@ -158,36 +165,43 @@ namespace turbofanRouter
                 if (fanMessage.HasRemainingRul)
                 {
                     Logger.Log($"Endpoint {EndpointNames.FromLeafDevice}: already classified, stop processing.", LogSeverity.Warning);
-                    return await HandleBadMessage(message, moduleClient);
+                    return await HandleBadMessage(message, moduleClient).ConfigureAwait(false);
                 }
 
-                await SendMessageToClassifier(moduleClient, fanMessage);
+                await SendMessageToClassifier(moduleClient, fanMessage).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.Log($"LeafDeviceInputMessageHandler got exception {ex.Message}", LogSeverity.Error);
             }
+
             return MessageResponse.Completed;
         }
 
         private static async Task SendMessageToClassifier(ModuleClient moduleClient, TurbofanMessage fanMessage)
         {
             Message classifierMessage = fanMessage.CreateClassifierMessage();
-            await moduleClient.SendEventAsync(EndpointNames.ToClassifierModule, classifierMessage);
+            await moduleClient
+                .SendEventAsync(EndpointNames.ToClassifierModule, classifierMessage)
+                .ConfigureAwait(false);
             Logger.Log($"Sent message to classifier on {EndpointNames.ToClassifierModule} for DeviceId: {fanMessage.DeviceId} CycleTime: {fanMessage.Message["CycleTime"]}");
         }
 
         private static async Task SendRulMessageToIotHub(ModuleClient moduleClient, TurbofanMessage fanMessage)
         {
             Message rulMessage = fanMessage.CreateRemainingLifeMessage();
-            await moduleClient.SendEventAsync(EndpointNames.ToIotHub, rulMessage);
+            await moduleClient
+                .SendEventAsync(EndpointNames.ToIotHub, rulMessage)
+                .ConfigureAwait(false);
             Logger.Log($"Sent rul message to {EndpointNames.ToIotHub} for DeviceId: {fanMessage.DeviceId} CycleTime: {fanMessage.Message["CycleTime"]}");
         }
 
         private static async Task SendMessageToAvroWriter(ModuleClient moduleClient, TurbofanMessage fanMessage)
         {
             Message avroMessage = fanMessage.CreateAvroWriterMessage();
-            await moduleClient.SendEventAsync(EndpointNames.ToAvroWriter, avroMessage);
+            await moduleClient
+                .SendEventAsync(EndpointNames.ToAvroWriter, avroMessage)
+                .ConfigureAwait(false);
             Logger.Log($"Sent avro message to {EndpointNames.ToAvroWriter} for DeviceId: {fanMessage.DeviceId} CycleTime: {fanMessage.Message["CycleTime"]}");
         }
 
@@ -204,7 +218,10 @@ namespace turbofanRouter
         private static async Task<MessageResponse> HandleBadMessage(Message message, ModuleClient moduleClient)
         {
             message.Properties.Add("DeadLetter", "true");
-            await moduleClient.SendEventAsync(EndpointNames.ToDeadMessage, message);
+            await moduleClient
+                .SendEventAsync(EndpointNames.ToDeadMessage, message)
+                .ConfigureAwait(false);
+                
             return MessageResponse.Completed;
         }
     }

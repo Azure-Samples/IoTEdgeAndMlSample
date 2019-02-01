@@ -20,9 +20,9 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Azure.IoT.Samples
 {
-    class Program
+    public class Program
     {
-        private const int CycleTimeSeconds = 1;
+        private const int cycleTimeSeconds = 1;
 
         private static string connectionString;
         private static CommandLineApplication app = new CommandLineApplication();
@@ -107,12 +107,12 @@ namespace Microsoft.Azure.IoT.Samples
             Console.WriteLine($"Using connection string: {connectionString}");
         }
 
-        static async Task SendEvent(DeviceClient deviceClient, string message)
+        private static async Task SendEvent(DeviceClient deviceClient, string message)
         {
             Console.WriteLine($"{DateTime.Now} > Sending message: {message}");
             Message eventMessage = new Message(Encoding.ASCII.GetBytes(message));
             await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
-            await Task.Delay(TimeSpan.FromSeconds(CycleTimeSeconds)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(cycleTimeSeconds)).ConfigureAwait(false);
         }
     }
 }

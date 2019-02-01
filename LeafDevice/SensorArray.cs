@@ -19,7 +19,8 @@ namespace Microsoft.Azure.IoT.Samples
 {
     internal class SensorArray
     {
-        const string FileNameTemplate = "test_FD00{0}.txt";
+        private readonly Random rnd = new Random();
+        private const string fileNameTemplate = "test_FD00{0}.txt";
 
         public List<CycleData> Cycles;
 
@@ -41,19 +42,19 @@ namespace Microsoft.Azure.IoT.Samples
 
         private List<CycleData> ReadDeviceData(string dataSetFileName, string deviceId)
         {
-            return File.ReadLines(dataSetFileName)
+            return File
+                .ReadLines(dataSetFileName)
                 .Where(line => line.StartsWith(deviceId + " "))
                 .Select(row =>
-                {
-                    string[] columns = row.TrimEnd().Split(' ');
-                    return new CycleData(columns);
-                })
+                    {
+                        string[] columns = row.TrimEnd().Split(' ');
+                        return new CycleData(columns);
+                    })
                 .ToList();
         }
 
         private string GetRandomDevice()
         {
-            Random rnd = new Random();
             int deviceId = rnd.Next(1, 101);
             return deviceId.ToString();
         }
@@ -61,9 +62,8 @@ namespace Microsoft.Azure.IoT.Samples
         private string PickRandomDataFile()
         {
             string dataFilePath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Random rnd = new Random();
             int dataSet = rnd.Next(1, 4);
-            string fileName = String.Format(FileNameTemplate, dataSet);
+            string fileName = String.Format(fileNameTemplate, dataSet);
             return Path.Join(dataFilePath, fileName);
         }
     }

@@ -91,8 +91,9 @@ namespace turbofanRouter
         {
             if (parsedMessage.Count == 0)
             {
-                throw new ApplicationException("parsedMessage is empty, no message to send");
+                throw new ApplicationException("parsedMessage is empty; no message to send");
             }
+            
             try
             {
                 Message message = CreateDeviceClientMessage(ToJson(parsedMessage));
@@ -108,13 +109,13 @@ namespace turbofanRouter
         /// <summary>
         /// Creates a message to send upstream with a minimum set of properties
         /// </summary>
-        /// <returns></returns>
         public Message CreateRemainingLifeMessage()
         {
             if (parsedMessage.Count == 0)
             {
                 throw new ApplicationException("parsedMessage is empty, no message to send");
             }
+
             try
             {
                 Dictionary<string, object> rulMessageData = GetRulMessageData();
@@ -132,7 +133,8 @@ namespace turbofanRouter
         {
             Message message = new Message(Encoding.UTF8.GetBytes(messageData));
             
-            //set content encoding and type to enable routing
+            // IMPORTANT
+            // set content encoding and type to enable routing by message body
             message.ContentEncoding = "utf-8";
             message.ContentType = "application/json";
 
@@ -163,6 +165,7 @@ namespace turbofanRouter
                 Logger.Log("Received message was empty", LogSeverity.Warning);
                 return;
             }
+
             try
             {
                 messageJson = Encoding.UTF8.GetString(messageBytes);
@@ -185,6 +188,7 @@ namespace turbofanRouter
             {
                 message.Properties.Add(kvp.Key, kvp.Value);
             }
+
             if (message.Properties.ContainsKey(CorrelationIdName))
             {
                 message.CorrelationId = message.Properties[CorrelationIdName];
@@ -193,13 +197,15 @@ namespace turbofanRouter
 
         private Dictionary<string, object> GetRulMessageData()
         {
-            Dictionary<string, Object> rulMessageData = new Dictionary<string, Object>();
+            Dictionary<string, Object> rulMessageData = new Dictionary<string, object>();
             rulMessageData.Add(ConnectionDeviceIdName, messageProperties[ConnectionDeviceIdName]);
             rulMessageData.Add(CorrelationIdName, messageProperties[CorrelationIdName]);
             rulMessageData.Add(PredictedRulKeyName, parsedMessage[PredictedRulKeyName]);
             rulMessageData.Add(CycleTimeKeyName, parsedMessage[CycleTimeKeyName]);
+
             return rulMessageData;
         }
+
         private void AddMessageProperties(Message message)
         {
             foreach (var prop in message.Properties)
@@ -207,12 +213,14 @@ namespace turbofanRouter
                 messageProperties.Add(prop.Key, prop.Value);
             }
 
-            if (message.CreationTimeUtc != null && !messageProperties.ContainsKey(CreationTimeUtcName))
+            if (message.CreationTimeUtc != null
+                && !messageProperties.ContainsKey(CreationTimeUtcName))
             {
                 messageProperties.Add(CreationTimeUtcName, message.CreationTimeUtc.ToString());
             }
 
-            if (message.EnqueuedTimeUtc != null && !messageProperties.ContainsKey(EnqueuedTimeUtcName))
+            if (message.EnqueuedTimeUtc != null
+                && !messageProperties.ContainsKey(EnqueuedTimeUtcName))
             {
                 messageProperties.Add(EnqueuedTimeUtcName, message.EnqueuedTimeUtc.ToString());
             }
@@ -220,11 +228,13 @@ namespace turbofanRouter
             if (!messageProperties.ContainsKey(CorrelationIdName))
             {
                 string correlationId = String.IsNullOrWhiteSpace(message.CorrelationId)
-                                            ? Guid.NewGuid().ToString()
-                                            : message.CorrelationId;
+                    ? Guid.NewGuid().ToString()
+                    : message.CorrelationId;
                 messageProperties.Add(CorrelationIdName, correlationId);
             }
-            if (!String.IsNullOrWhiteSpace(message.ConnectionDeviceId) && !messageProperties.ContainsKey(ConnectionDeviceIdName))
+
+            if (!String.IsNullOrWhiteSpace(message.ConnectionDeviceId)
+                && !messageProperties.ContainsKey(ConnectionDeviceIdName))
             {
                 messageProperties.Add(ConnectionDeviceIdName, message.ConnectionDeviceId);
             }
@@ -259,7 +269,8 @@ namespace turbofanRouter
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
             DateParseHandling = DateParseHandling.None,
-            Converters = {
+            Converters =
+            {
                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
             },
         };
