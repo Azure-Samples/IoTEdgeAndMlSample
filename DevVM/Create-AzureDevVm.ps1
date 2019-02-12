@@ -83,7 +83,7 @@ Function Connect-AzureSubscription() {
 ###########################################################################
 #
 # Confirm-Create - confirms that the user wants to continue with the 
-# creation of the ivirtual machine.
+# creation of the virtual machine.
 # 
 Function Confirm-Create() {
     Write-Host @"
