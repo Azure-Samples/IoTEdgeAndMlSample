@@ -1,0 +1,88 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[take(concat('iotedgeandml', uniqueString(resourceGroup().id)), 23)]"
+        },
+        "hubName": {
+            "type": "string",
+            "defaultValue": "[take(concat('IotEdgeAndMlHub-', uniqueString(resourceGroup().id)), 49)]"
+        }
+    },
+    "variables": {
+        "deviceDataContainerName": "devicedata",
+        "rulDataContainerName": "ruldata",
+        "uploadFilesContainerName": "uploadturbofanfiles"
+    },
+    "resources": [
+        {
+            "name": "[parameters('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-02-01",
+            "location": "[parameters('location')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "accessTier": "Hot"
+            },
+            "resources": [
+                {
+                    "name": "[concat('default/', variables('deviceDataContainerName'))]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "2018-03-01-preview",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                },
+                {
+                    "name": "[concat('default/', variables('rulDataContainerName'))]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "2018-03-01-preview",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                },
+                {
+                    "name": "[concat('default/', variables('uploadFilesContainerName'))]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "2018-03-01-preview",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "[parameters('hubName')]",
+            "type": "Microsoft.Devices/IotHubs",
+            "apiVersion": "2016-02-03",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "properties": {
+                "location": "[parameters('location')]"
+            }
+        }
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[parameters('storageAccountName')]"
+        },
+        "hubName": {
+            "type": "string",
+            "value": "[parameters('hubName')]"
+        }
+    }
+}

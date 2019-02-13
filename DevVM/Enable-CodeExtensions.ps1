@@ -23,3 +23,6 @@ code --install-extension peterjausovec.vscode-docker
 
 #powershell extension
 code --install-extension ms-vscode.PowerShell
+
+#aml extension
+code --install-extension ms-toolsai.vscode-ai
