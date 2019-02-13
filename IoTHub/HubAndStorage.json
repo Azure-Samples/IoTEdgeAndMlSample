@@ -63,7 +63,7 @@
         {
             "name": "[parameters('hubName')]",
             "type": "Microsoft.Devices/IotHubs",
-            "apiVersion": "2016-02-03",
+            "apiVersion": "2017-07-01",
             "location": "[parameters('location')]",
             "sku": {
                 "name": "S1",
@@ -71,7 +71,38 @@
                 "capacity": 1
             },
             "properties": {
-                "location": "[parameters('location')]"
+                "location": "[parameters('location')]",
+                "routing": {
+                    "endpoints": {
+                        "serviceBusQueues": [],
+                        "serviceBusTopics": [],
+                        "eventHubs": [],
+                        "storageContainers": [
+                            {
+                                "connectionString": "[Concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+                                "containerName": "devicedata",
+                                "fileNameFormat": "{iothub}/{YYYY}/{MM}/{DD}/{HH}/{mm}/{partition}",
+                                "batchFrequencyInSeconds": 100,
+                                "maxChunkSizeInBytes": 104857600,
+                                "encoding": "avro",
+                                "name": "turbofanDeviceStorage",
+                                "subscriptionId": "[subscription().subscriptionId]",
+                                "resourceGroup": "[resourceGroup().name]"
+                            }
+                        ]
+                    },
+                    "routes": [
+                        {
+                            "name": "turbofanDeviceDataToStorage",
+                            "source": "DeviceMessages",
+                            "condition": "true",
+                            "endpointNames": [
+                                "turbofanDeviceStorage"
+                            ],
+                            "isEnabled": true
+                        }
+                    ]
+                }
             }
         }
     ],
