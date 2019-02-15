@@ -42,11 +42,11 @@ namespace DeviceHarness
         /// <param name="deviceNumber">Integer number of the data series device to send</param>
         /// <param name="iotHubConnectionString">Connection string for the IoT Hub in which to create the device</param>
         /// <param name="fileManager">TrainingFileManager for the dataset to be read and sent</param>
-        public TurbofanDevice(int deviceNumber, string iotHubConnectionString, TrainingFileManager fileManager)
+        public TurbofanDevice(int deviceNumber, string iotHubConnectionString, TrainingFileManager fileManager, string gatewayFqdn = null)
         {
             deviceUnitNumber = deviceNumber;
             string deviceId = $"Client_{deviceNumber:000}";
-            deviceConnectionString = CreateIotHubDevice(iotHubConnectionString, deviceId).Result;
+            deviceConnectionString = GetIotHubDevice(iotHubConnectionString, deviceId, gatewayFqdn).Result;
             trainingFileManager = fileManager;
         }
 
@@ -82,7 +82,7 @@ namespace DeviceHarness
         /// </summary>
         /// <param name="iotHubConnectionString">Connection string for the IoT Hub</param>
         /// <param name="deviceId">Name of the device in the IoT Hub e.g Device_001</param>
-        private async Task<string> CreateIotHubDevice(string iotHubConnectionString, string deviceId)
+        private async Task<string> GetIotHubDevice(string iotHubConnectionString, string deviceId, string gatewayFqdn = null)
         {
             RegistryManager regManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
             string hostname = Microsoft.Azure.Devices.IotHubConnectionStringBuilder.Create(iotHubConnectionString).HostName;
@@ -91,11 +91,19 @@ namespace DeviceHarness
             if (device == null)
             {
                 Console.WriteLine($"Creating new IoT device: {deviceId}");
-                Device newDevice = await regManager.AddDeviceAsync(new Device(deviceId)).ConfigureAwait(false);
-                return $"HostName={hostname};DeviceId={newDevice.Id};SharedAccessKey={newDevice.Authentication.SymmetricKey.PrimaryKey}";
+                device = await regManager.AddDeviceAsync(new Device(deviceId)).ConfigureAwait(false);
             }
             Console.WriteLine($"Found existing device: {device.Id}");
-            return $"HostName={hostname};DeviceId={device.Id};SharedAccessKey={device.Authentication.SymmetricKey.PrimaryKey}";
+
+            string connectionString = $"HostName={hostname};DeviceId={device.Id};SharedAccessKey={device.Authentication.SymmetricKey.PrimaryKey}";
+
+            if (!String.IsNullOrWhiteSpace(gatewayFqdn))
+            {
+                connectionString = $"{connectionString};GatewayHostName={gatewayFqdn.ToLower()}";
+            }
+            Console.WriteLine($"Using device connection string: {connectionString}");
+            
+            return connectionString;
         }
 
         /// <summary>
