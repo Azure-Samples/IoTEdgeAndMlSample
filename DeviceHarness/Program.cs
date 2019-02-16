@@ -19,47 +19,31 @@ namespace DeviceHarness
     class Program
     {
         private static List<TurbofanDevice> devices = new List<TurbofanDevice>();
-        private static List<Task> deviceTasks = new List<Task>();
         private static CommandLineApplication app = new CommandLineApplication();
         private static CommandOption connectionStringOption;
-        private static CommandOption trainingSetOption;
+        private static CommandOption dataSetOption;
+        private static CommandOption certificateOption;
+        private static CommandOption maxDevicesOption;
+        private static CommandOption gatewayHostNameOption;
+
 
         /// <summary>
         /// Main entry point for the device harness. If args are not passed default data sett FD003
         /// is used and program prompts for IoT Hub connection string
         /// </summary>
-        /// <param name="args">-x "<your connection string>" -t "FDOO3"</param>
+        /// <param name="args">-x "hub connection string" -d "FDOO3" -c "certificate path" -m "maximum # devices"</param>
         static void Main(string[] args)
         {
             InitializeApp();
             app.OnExecute(() =>
             {
-                string iotHubConnectionString = GetConnectionString();
-                string trainingSet = GetTrainingSet();
+                InstallCertificate();
 
+                string trainingSet = GetDataSet();
                 var fileManager = new TrainingFileManager(trainingSet);
-                int maxDevice = fileManager.MaxDeviceId;
 
-                for (int i = 1; i <= maxDevice; i++)
-                {
-                    var device = new TurbofanDevice(i, iotHubConnectionString, fileManager);
-                    devices.Add(device);
-                    deviceTasks.Add(device.RunDeviceAsync());
-                }
-
-                Task.WhenAll(deviceTasks).Wait();
-
-                int totalMessages = 0;
-                foreach (var dev in devices)
-                {
-                    totalMessages += dev.MessagesSent;
-                }
-
-                if (fileManager.TotalMessages != totalMessages)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Sent a total of {totalMessages} to IotHub, but should have sent {fileManager.TotalMessages}");
-                }
+                List<Task> deviceRunTasks = SetupDeviceRunTasks(fileManager);
+                Task.WhenAll(deviceRunTasks).Wait();
 
                 return 0;
             });
@@ -68,16 +52,38 @@ namespace DeviceHarness
         }
 
         /// <summary>
+        /// Looks for a certificate either passed as a parameter or in the CA_CERTIFICATE_PATH
+        /// environment variable and, if present, attempts to install the certificate
+        /// </summary>
+        private static void InstallCertificate()
+        {
+            string certificatePath;
+            if (!certificateOption.HasValue())
+            {
+                certificatePath = Environment.GetEnvironmentVariable("CA_CERTIFICATE_PATH");
+            }
+            else
+            {
+                certificatePath = certificateOption.Value();
+            }
+
+            if (!String.IsNullOrWhiteSpace(certificatePath))
+            {
+                CertificateManager.InstallCACert(certificatePath);
+            }
+        }
+
+        /// <summary>
         /// Checks for the presence of a trainingSetOption. If not found, the method returns the default
         /// training set name ("FD003"). If trainingSetOption is passed, the method validates the value
         /// </summary>
         /// <returns>String representing the name of the training set to be used</returns>
-        private static string GetTrainingSet()
+        private static string GetDataSet()
         {
             var correctSet = new List<string> { "FD001", "FD002", "FD003", "FD004" };
-            string setName = String.IsNullOrWhiteSpace(trainingSetOption.Value())
+            string setName = String.IsNullOrWhiteSpace(dataSetOption.Value())
                 ? "FD003" //default to FD003
-                : trainingSetOption.Value();
+                : dataSetOption.Value();
 
             if (!correctSet.Contains(setName))
             {
@@ -89,13 +95,66 @@ namespace DeviceHarness
         }
 
         /// <summary>
+        /// Creates the set of tasks that will send data to the IoT hub.
+        /// </summary>
+        /// <param name="fileManager">TrainingFileManager for the data set for devices to send.</param>
+        /// <returns></returns>
+        private static List<Task> SetupDeviceRunTasks(TrainingFileManager fileManager)
+        {
+            List<Task> deviceTasks = new List<Task>();
+
+            string iotHubConnectionString = GetConnectionString();
+            int maxDevice = GetMaxDevice(fileManager);
+            string gatewayHost = gatewayHostNameOption.HasValue() ? gatewayHostNameOption.Value() : null;
+
+            for (int i = 1; i <= maxDevice; i++)
+            {
+                var device = new TurbofanDevice(i, iotHubConnectionString, fileManager, gatewayHost);
+                devices.Add(device);
+                deviceTasks.Add(device.RunDeviceAsync());
+            }
+
+            return deviceTasks;
+        }
+
+        /// <summary>
+        /// Return the number of devices for which to send, which will be the lower
+        /// of the number of devices in the data set and the value of the passed in max devices
+        /// </summary>
+        /// <param name="filemanager">TrainingFileManager for the data set for devices to send.</param>
+        /// <returns></returns>
+        private static int GetMaxDevice(TrainingFileManager filemanager)
+        {
+            int maxDevices = filemanager.MaxDeviceId;
+            int.TryParse(maxDevicesOption.Value(), out int maxRequested);
+
+            if (!maxDevicesOption.HasValue() || maxRequested == 0)
+            {
+                return maxDevices;
+            }
+
+            return maxRequested > maxDevices ? maxDevices : maxRequested;
+        }
+
+        /// <summary>
         /// Retrieves the value of the connection string from the connectionStringOption. 
         /// If the connection string wasn't passed method prompts for the connection string.
         /// </summary>
         /// <returns></returns>
         private static string GetConnectionString()
         {
-            string connectionString = connectionStringOption.Value();
+            string connectionString;
+
+            if (!connectionStringOption.HasValue())
+            {
+                connectionString = Environment.GetEnvironmentVariable("DEVICE_CONNECTION_STRING");
+                app.ShowHint();
+            }
+            else
+            {
+                connectionString = connectionStringOption.Value();
+            }
+
             while (String.IsNullOrWhiteSpace(connectionString))
             {
                 Console.Write("IoT Hub Connection String:");
@@ -118,12 +177,27 @@ namespace DeviceHarness
 
             connectionStringOption = app.Option(
                 "-x|--connection",
-                "IoT Hub Connection String e.g HostName=hubname.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxxxxx;",
+                @"IoT Hub Connection String e.g HostName=hubname.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxxxxx;",
                 CommandOptionType.SingleValue);
 
-            trainingSetOption = app.Option(
-                "-t|--trainingSet",
+            dataSetOption = app.Option(
+                "-d|--data-set",
                 "The name of the data set to send to the IoT Hub. Must be in the set [FD001, FD002, FD003, FD004]",
+                CommandOptionType.SingleValue);
+
+            certificateOption = app.Option(
+                "-c|--certificate",
+                "Certificate with root CA in PEM format",
+                 CommandOptionType.SingleValue);
+
+            maxDevicesOption = app.Option(
+               "-m|--max-devices",
+               "Maximum number of devices to simulate. If value exceeds number of devices in the data set it will be ignored.",
+                CommandOptionType.SingleValue);
+           
+            gatewayHostNameOption = app.Option(
+               "-g|--gateway-host-name",
+               "Fully qualified domain name of the edge device acting as a gateway. e.g. iotedge-xxx.westus2.cloudapp.azure.com ",
                 CommandOptionType.SingleValue);
         }
 

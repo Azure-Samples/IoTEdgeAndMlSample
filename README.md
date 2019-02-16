@@ -4,17 +4,14 @@ Frequently, IoT applications want to take advantage of the intelligent cloud and
 
 # Instructions for completing the walk-through
 
-The detailed walk-through instructions for this sample can be found in the [EdgeAndMlWalkthrough.pdf](./EdgeAndMlWalkthrough.pdf).
-
-At a high-level the sample has the following steps:
-
-1. Set up development machine - [Dev VM](./DevVM) folder
-1. Add IoT Hub and configure storage
-1. Generate device data and send to IoT Hub [Device Harness](./DeviceHarness) folder
-1. Train and deploy ML model [Azure Notebooks](./AzureNotebooks)
-1. Configure IoT Edge device [Edge VM](./EdgeVM) folder
-1. Create IoT Edge modules [Edge Modules](./EdgeModules) folder
-1. Send device data through IoT Edge device[Leaf Device](./LeafDevice) folder
+The detailed walk-through instructions for this sample can be found in the PDF files:
+1. [Introduction](./EdgeAndMlWalkthrough_01_Intro.pdf)
+1. [Setup up your development machine and Azure services](EdgeAndMlWalkthrough_02_Setup.pdf)
+1. [Generate the training data for the ML module](EdgeAndMlWalkthrough_03_Generate.pdf)
+1. [Train and deploy the ML model](EdgeAndMlWalkthrough_04_Train.pdf)
+1. [Configure an IoT Edge device](EdgeAndMlWalkthrough_05_Configure.pdf)
+1. [Create and deploy IoT Edge modules](EdgeAndMlWalkthrough_06_Create.pdf)
+1. [Send data to your IoT Edge device](EdgeAndMlWalkthrough_07_Send.pdf)
 
  # Feedback
 

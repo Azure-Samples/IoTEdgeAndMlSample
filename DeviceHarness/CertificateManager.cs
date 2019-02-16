@@ -13,7 +13,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.IoT.Samples
+namespace DeviceHarness
 {
     internal class CertificateManager
     {

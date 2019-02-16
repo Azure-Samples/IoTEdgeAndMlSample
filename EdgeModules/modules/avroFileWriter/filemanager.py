@@ -54,7 +54,6 @@ def __get_parsed_schema():
                             {'name': 'Sensor1', 'type': 'float'},
                             {'name': 'OperationalSetting2', 'type': 'float'},
                             {'name': 'Sensor20', 'type': 'float'},
-                            {'name': 'DeviceId', 'type': 'float'},
                             {'name': 'Sensor5', 'type': 'float'},
                             {'name': 'PredictedRul', 'type': 'float'},
                             {'name': 'Sensor8', 'type': 'float'},

@@ -26,3 +26,6 @@ code --install-extension ms-vscode.PowerShell
 
 #aml extension
 code --install-extension ms-toolsai.vscode-ai
+
+#storage explorer
+code --install-extension formulahendry.azure-storage-explorer
