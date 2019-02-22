@@ -115,7 +115,6 @@ Are you sure you want to continue?
 # deployment.
 # 
 Function Get-ResourceGroup() {
-    # Get or create resource group
     $rg = Get-AzureRmResourceGroup $ResourceGroupName -ErrorAction Ignore
     if (!$rg) {
         $rg = New-AzureRmResourceGroup $ResourceGroupName -Location $Location
@@ -129,7 +128,7 @@ Function Get-ResourceGroup() {
 # create a virtual machine.  Returns the name of the virtual machine.
 # 
 Function Invoke-VmDeployment($resourceGroup) {
-    # Submit the ARM template deployment
+    # Create a unique deployment name
     $randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | ForEach-Object {[char]$_})
     $deploymentName = "IotEdgeMlDemoVm-$randomSuffix"
     $params = @{
@@ -154,15 +153,15 @@ Progress can be monitored from the Azure Portal (http://portal.azure.com).
 # Enable-HyperV -- Uses the vmname to enable Hyper-V on the VM.
 # 
 Function Install-Software($vmName) {
-    Write-Host "`nEnabling Hyper-V on Azure VM..."
+    Write-Host "`nEnabling Hyper-V in Windows on Azure VM..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Enable-HyperV.ps1' 2>&1>$null
     Write-Host "`nInstalling Chocolatey on Azure VM..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-Chocolatey.ps1' 2>&1>$null
-    Write-Host "`nInstalling necessary software Azure VM..."
+    Write-Host "`nInstalling necessary software on Azure VM..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Install-DevMachineSoftware.ps1' -Parameter @{ "AdminUserName" = $AdminUsername; } 2>&1>$null
   
     Write-Host "`nRestarting the VM..."
-    Restart-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName 2>&1>$null
+    Restart-AzureRmVM -Id "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Compute/virtualMachines/$vmName" 2>&1>$null
 }
 
 ###########################################################################
