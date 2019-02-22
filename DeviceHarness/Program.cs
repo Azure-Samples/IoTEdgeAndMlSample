@@ -28,7 +28,7 @@ namespace DeviceHarness
 
 
         /// <summary>
-        /// Main entry point for the device harness. If args are not passed default data sett FD003
+        /// Main entry point for the device harness. If args are not passed default data set FD003
         /// is used and program prompts for IoT Hub connection string
         /// </summary>
         /// <param name="args">-x "hub connection string" -d "FDOO3" -c "certificate path" -m "maximum # devices"</param>
@@ -74,10 +74,10 @@ namespace DeviceHarness
         }
 
         /// <summary>
-        /// Checks for the presence of a trainingSetOption. If not found, the method returns the default
-        /// training set name ("FD003"). If trainingSetOption is passed, the method validates the value
+        /// Checks for the presence of a dataSetOption. If not found, the method returns the default
+        /// data set name ("FD003"). If dataSetOption is passed, the method validates the value
         /// </summary>
-        /// <returns>String representing the name of the training set to be used</returns>
+        /// <returns>String representing the name of the data set to be used</returns>
         private static string GetDataSet()
         {
             var correctSet = new List<string> { "FD001", "FD002", "FD003", "FD004" };
@@ -126,14 +126,20 @@ namespace DeviceHarness
         private static int GetMaxDevice(TrainingFileManager filemanager)
         {
             int maxDevices = filemanager.MaxDeviceId;
-            int.TryParse(maxDevicesOption.Value(), out int maxRequested);
 
-            if (!maxDevicesOption.HasValue() || maxRequested == 0)
+            if (!maxDevicesOption.HasValue())
             {
                 return maxDevices;
             }
 
-            return maxRequested > maxDevices ? maxDevices : maxRequested;
+            int.TryParse(maxDevicesOption.Value(), out int maxRequested);
+
+            if (maxRequested == 0)
+            {
+                return maxDevices;
+            }
+
+            return Math.Min(maxRequested, maxDevices);
         }
 
         /// <summary>
@@ -194,7 +200,7 @@ namespace DeviceHarness
                "-m|--max-devices",
                "Maximum number of devices to simulate. If value exceeds number of devices in the data set it will be ignored.",
                 CommandOptionType.SingleValue);
-           
+
             gatewayHostNameOption = app.Option(
                "-g|--gateway-host-name",
                "Fully qualified domain name of the edge device acting as a gateway. e.g. iotedge-xxx.westus2.cloudapp.azure.com ",
