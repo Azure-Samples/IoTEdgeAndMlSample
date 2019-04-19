@@ -131,6 +131,22 @@ Progress can be monitored from the Azure Portal (http://portal.azure.com).
 # Install-Software -- Installs apt-get packages on the target VM
 # 
 Function Install-Software($vmName) {
+    $vmInfo = Get-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName -Status
+    foreach ($state in $vmInfo.Statuses) {
+        if (!$state.Code.StartsWith("PowerState")) {
+            continue
+        }
+
+        if ($state.Code.Contains("running")) {
+            Write-Host "VM $vmName is running"
+            break
+        }
+        else {
+            Write-Host "Starting VM $vmName"
+            Start-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName
+        }
+    }
+    
     Write-Host "`nInstalling apt-get packages..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunShellScript" -ScriptPath '.\installpackages.sh'
 }
