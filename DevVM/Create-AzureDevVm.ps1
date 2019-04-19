@@ -153,6 +153,22 @@ Progress can be monitored from the Azure Portal (http://portal.azure.com).
 # Enable-HyperV -- Uses the vmname to enable Hyper-V on the VM.
 # 
 Function Install-Software($vmName) {
+    $vmInfo = Get-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName -Status
+    foreach ($state in $vmInfo.Statuses) {
+        if (!$state.Code.StartsWith("PowerState")) {
+            continue
+        }
+
+        if ($state.Code.Contains("running")) {
+            Write-Host "VM $vmName is running"
+            break
+        }
+        else {
+            Write-Host "Starting VM $vmName"
+            Start-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $vmName
+        }
+    }
+
     Write-Host "`nEnabling Hyper-V in Windows on Azure VM..."
     Invoke-AzureRmVMRunCommand -ResourceGroupName $ResourceGroupName -Name $vmName -CommandId "RunPowerShellScript" -ScriptPath '.\Enable-HyperV.ps1' 2>&1>$null
     Write-Host "`nInstalling Chocolatey on Azure VM..."

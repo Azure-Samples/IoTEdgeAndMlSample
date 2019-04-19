@@ -9,6 +9,12 @@
 #
 #*********************************************************
 
+#docker extension
+code --install-extension peterjausovec.vscode-docker
+Write-Host "Starting Docker desktop. When it finishes starting it will prompt you to login."
+Write-Host "You'll find the process running in the system tray (near the clock on the taskbar)."
+Start-Process -FilePath "c:\Program Files\Docker\Docker\Docker for Windows.exe"
+
 #iot extensions
 code --install-extension vsciot-vscode.azure-iot-tools
 
@@ -17,9 +23,6 @@ code --install-extension ms-python.python
 
 #dotnet extensions
 code --install-extension ms-vscode.csharp
-
-#docker extension
-code --install-extension peterjausovec.vscode-docker
 
 #powershell extension
 code --install-extension ms-vscode.PowerShell
