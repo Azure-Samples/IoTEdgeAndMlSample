@@ -90,7 +90,7 @@
                         }
                     },
                     {
-                        "name": "IoT1",
+                        "name": "AMQP1",
                         "properties": {
                             "priority": 310,
                             "protocol": "Tcp",
@@ -103,7 +103,7 @@
                         }
                     },
                     {
-                        "name": "IoT2",
+                        "name": "AMQP2",
                         "properties": {
                             "priority": 320,
                             "protocol": "Tcp",
@@ -116,9 +116,22 @@
                         }
                     },
                     {
-                        "name": "HTTPS",
+                        "name": "MQTT",
                         "properties": {
                             "priority": 330,
+                            "protocol": "Tcp",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "8883"
+                        }
+                    },
+                    {
+                        "name": "HTTPS",
+                        "properties": {
+                            "priority": 340,
                             "protocol": "Tcp",
                             "access": "Allow",
                             "direction": "Inbound",
@@ -154,7 +167,7 @@
         },
         {
             "name": "[parameters('virtualMachineName')]",
-            "type": "Microsoft.Network/publicIpAddresses",
+            "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2018-08-01",
             "location": "[parameters('location')]",
             "sku": {

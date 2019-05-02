@@ -28,7 +28,8 @@ The Docker image can be built using either the Docker CLI or directly from Visua
 1. Open the Docker CLI (any shell where docker is in the PATH)
 1. Change to the directory containing this README
 1. Run the command:
-    ```
+
+    ```cmd
     docker build --rm -f "openssl.dockerfile" -t mledgeopenssl:latest .
     ```
 
@@ -43,7 +44,8 @@ The Docker image can be built using either the Docker CLI or directly from Visua
 1. Create a local directory for the certificates called c:\edgeCertificates
 1. Open Docker CLI
 1. Run the command:
-    ```
+
+    ```cmd
     docker run --name mledgeopenssl --rm -v c:\edgeCertificates:/edgeCertificates mledgeopenssl /edgeCertificates
     ```
 
