@@ -1,3 +1,16 @@
+---
+page_type: sample
+languages:
+- csharp
+- powershell
+- python
+products:
+- IoT Hub
+- Machine Learning service
+name: Machine Learning and IoT Edge
+urlFragment: MLandIotEdge
+description: In this sample, we walk you through training a machine learning model with data collected from IoT devices in the cloud, deploying that model to IoT Edge, and maintaining and refining the model periodically.
+---
 # Machine Learning and IoT Edge
 
 Frequently, IoT applications want to take advantage of the intelligent cloud and the intelligent edge. In this sample, we walk you through training a machine learning model with data collected from IoT devices in the cloud, deploying that model to IoT Edge, and maintaining and refining the model periodically.
