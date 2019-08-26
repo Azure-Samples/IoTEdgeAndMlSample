@@ -6,6 +6,7 @@ languages:
 - python
 products:
 - IoT Hub
+- IoT Edge
 - Machine Learning service
 name: Machine Learning and IoT Edge
 urlFragment: MLandIotEdge
