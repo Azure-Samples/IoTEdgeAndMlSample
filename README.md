@@ -2,7 +2,6 @@
 page_type: sample
 languages:
 - csharp
-- powershell
 - python
 products:
 - IoT Hub
