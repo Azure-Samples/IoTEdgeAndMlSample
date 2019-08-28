@@ -9,7 +9,7 @@ products:
 - Machine Learning service
 name: Machine Learning and IoT Edge
 urlFragment: MLandIotEdge
-description: Training a machine learning model with data collected from IoT devices in the cloud, deploy the model to IoT Edge.
+description: Training a machine learning model in the cloud with data collected from IoT devices, deploy the model to IoT Edge.
 ---
 # Machine Learning and IoT Edge
 
