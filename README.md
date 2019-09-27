@@ -3,8 +3,8 @@ page_type: sample
 languages:
 - csharp
 - python
-- shell script
-- PowerShell
+- bash
+- powershell
 products:
 - azure-iot-hub
 - azure-iot-edge
