@@ -34,7 +34,7 @@ cinst vscode
 cinst python
 
 # install dotnet core sdk with cli
-cinst dotnetcore-sdk
+cinst dotnetcore-sdk --version=3.1.100
 
 # install azure powershell
 cinst azurepowershell
