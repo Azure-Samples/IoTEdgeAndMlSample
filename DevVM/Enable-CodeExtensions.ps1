@@ -13,7 +13,7 @@
 code --install-extension ms-azuretools.vscode-docker
 Write-Host "Starting Docker desktop. When it finishes starting it will prompt you to login."
 Write-Host "You'll find the process running in the system tray (near the clock on the taskbar)."
-Start-Process -FilePath "c:\Program Files\Docker\Docker\Docker for Windows.exe"
+Start-Process -FilePath "c:\Program Files\Docker\Docker\Docker Desktop.exe"
 
 #iot extensions
 code --install-extension vsciot-vscode.azure-iot-tools
