@@ -20,7 +20,7 @@ If you are not following the walk-through and using the recommended [development
 
   - [Azure Account and Sign-In](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account)
 
-  - [C# for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)
+  - [C# for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
 
 ## Build and Run
 

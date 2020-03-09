@@ -22,7 +22,7 @@ code --install-extension vsciot-vscode.azure-iot-tools
 code --install-extension ms-python.python
 
 #dotnet extensions
-code --install-extension ms-vscode.csharp
+code --install-extension ms-dotnettools.csharp
 
 #powershell extension
 code --install-extension ms-vscode.PowerShell
