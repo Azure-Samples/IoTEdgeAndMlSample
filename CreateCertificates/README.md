@@ -16,7 +16,7 @@ The scripts in this folder expect that you have set up a machine as found in [Io
 
 There are 2 steps to generating certificates.
 
-1. Build a Docker image that contains [openssl](https://www.openssl.org/) and the [scripts](https://github.com/Azure/azure-iot-sdk-c/tree/master/tools/CACertificate)
+1. Build a Docker image that contains [openssl](https://www.openssl.org/) and the [scripts](https://github.com/Azure/azure-iot-sdk-c/tree/master/tools/CACertificates)
 
 1. Run a container using the image to copy the files onto your local machine
 
