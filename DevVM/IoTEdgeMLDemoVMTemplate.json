@@ -5,6 +5,9 @@
         "location": {
             "type": "string"
         },
+        "region": {
+            "type": "string"
+        },
         "virtualMachineName": {
             "type": "string",
             "defaultValue": "[take(concat('IoTMLDemo-', uniqueString(resourceGroup().id, subscription().subscriptionId)), 15)]"
@@ -155,7 +158,7 @@
                     "imageReference": {
                         "publisher": "MicrosoftWindowsDesktop",
                         "offer": "Windows-10",
-                        "sku": "rs5-pro",
+                        "sku": "rs5-pro-g2",
                         "version": "latest"
                     }
                 },
