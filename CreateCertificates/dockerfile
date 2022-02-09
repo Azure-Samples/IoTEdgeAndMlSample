@@ -1,6 +1,8 @@
 FROM centos
 
 RUN mkdir /work
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-* &&\
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
 
 RUN yum -y install openssl git \
     && git clone https://github.com/Azure/azure-iot-sdk-c.git /source/azure-iot-sdk-c
